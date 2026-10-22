@@ -25,7 +25,7 @@ export async function onRequestPost({ request, env }) {
     const r = await fetch(base + '/chat/completions', {
       method: 'POST',
       headers: { 'content-type': 'application/json', authorization: 'Bearer ' + env.AI_API_KEY },
-      body: JSON.stringify({ model, messages: msgs, tools: TOOLS, tool_choice: 'auto', temperature: 0.2, max_tokens: 1200 }),
+      body: JSON.stringify({ model, messages: msgs, tools: TOOLS, tool_choice: 'auto', temperature: 0.2, max_tokens: 900 }),
     });
     if (!r.ok) return json({ error: `AI ${r.status}: ${(await r.text()).slice(0, 300)}` }, 502);
     const msg = (await r.json()).choices?.[0]?.message;
