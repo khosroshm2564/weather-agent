@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0e5c6e">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="icon" href="/icon-192.png">
+<title>هواشناسی هوشمند</title>
+<style>
+:root{
+  --ink:#12263a; --mute:#5d7084; --line:#d5dee6; --bg:#eef3f6; --panel:#fff;
+  --sea:#0e5c6e; --sea2:#127b8f; --warm:#e8912d; --cool:#3a6ea5; --rain:#2d7fd3;
+  --pt:env(safe-area-inset-top,0px); --pb:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root{--ink:#e8f0f5;--mute:#93a7b8;--line:#2a3b4b;--bg:#0c1722;--panel:#13222f;--sea:#0b4757;--sea2:#2aa3b8;--warm:#f0a24a;--cool:#79a8de;--rain:#5aa4ec}
+}
+*{box-sizing:border-box;margin:0}
+html{-webkit-text-size-adjust:100%}
+body{font-family:Vazirmatn,Shabnam,"Samsung Sans",Tahoma,system-ui,sans-serif;background:var(--bg);color:var(--ink);line-height:1.7;padding-bottom:calc(24px + var(--pb))}
+button,input{font:inherit;color:inherit}
+.muted{color:var(--mute);font-size:.85rem}
+.wrap{max-width:760px;margin:0 auto;padding:0 14px}
+
+/* top bar */
+.top{position:sticky;top:0;z-index:20;background:var(--sea);padding:calc(10px + var(--pt)) 0 10px}
+.search{position:relative;display:flex;gap:8px}
+.search input{flex:1;border:0;border-radius:12px;padding:11px 14px;background:rgba(255,255,255,.95);color:#12263a;font-size:1rem;outline:none}
+.search input:focus-visible{box-shadow:0 0 0 3px #f2a33a}
+.iconbtn{border:0;border-radius:12px;background:rgba(255,255,255,.16);color:#fff;padding:0 14px;cursor:pointer;font-size:1.1rem}
+.iconbtn:focus-visible{outline:3px solid #f2a33a}
+.sugg{position:absolute;top:100%;inset-inline:0;margin-top:6px;background:var(--panel);border-radius:12px;box-shadow:0 10px 30px rgba(0,0,0,.25);overflow:hidden;max-height:60vh;overflow-y:auto}
+.sugg button{display:block;width:100%;text-align:start;border:0;background:none;padding:10px 14px;cursor:pointer;border-bottom:1px solid var(--line)}
+.sugg button:hover,.sugg button:focus-visible{background:var(--bg)}
+.sugg small{color:var(--mute)}
+
+/* hero */
+.hero{background:linear-gradient(180deg,var(--sea),var(--sea2));color:#fff;padding:18px 0 22px}
+.hero h1{font-size:1.25rem;font-weight:700}
+.hero .sub{opacity:.8;font-size:.85rem}
+.now{display:flex;align-items:center;gap:14px;margin:10px 0 14px}
+.now .t{font-size:4.2rem;font-weight:800;line-height:1;letter-spacing:-2px}
+.now .c{font-size:2.6rem}
+.now .d{font-size:1rem}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(255,255,255,.2);border-radius:12px;overflow:hidden}
+.metrics div{background:rgba(0,0,0,.12);padding:8px 10px;font-size:.82rem}
+.metrics b{display:block;font-size:1rem}
+.src{margin-top:10px;font-size:.75rem;opacity:.8}
+
+/* tabs */
+.tabs{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--line);margin-top:14px;scrollbar-width:none}
+.tabs button{flex:none;border:0;background:none;padding:10px 14px;cursor:pointer;color:var(--mute);border-bottom:3px solid transparent;font-weight:600}
+.tabs button[aria-selected=true]{color:var(--sea2);border-color:var(--sea2)}
+.tabs button:focus-visible{outline:2px solid var(--sea2);outline-offset:-2px}
+section.pane{padding:16px 0}
+h2{font-size:1.05rem;margin:0 0 8px}
+
+/* hourly */
+.hours{display:flex;gap:2px;overflow-x:auto;padding-bottom:6px}
+.hours div{flex:none;width:62px;text-align:center;padding:8px 2px;border-radius:10px}
+.hours div:nth-child(odd){background:color-mix(in srgb,var(--panel) 70%,transparent)}
+.hours .e{font-size:1.4rem}.hours .p{color:var(--rain);font-size:.75rem;min-height:1.2em}
+
+/* days with range ribbon */
+.day{display:grid;grid-template-columns:62px 28px 34px 1fr 34px 58px;align-items:center;gap:6px;padding:9px 0;border-bottom:1px solid var(--line);font-size:.92rem}
+.day .n{font-weight:700}.day .n small{display:block;font-weight:400;color:var(--mute);font-size:.72rem}
+.rib{position:relative;height:8px;background:var(--line);border-radius:4px;direction:ltr}
+.rib i{position:absolute;top:0;bottom:0;border-radius:4px;background:linear-gradient(90deg,var(--cool),var(--warm))}
+.day .lo{color:var(--mute);text-align:end}
+.day .r{color:var(--rain);font-size:.8rem;text-align:end}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th,td{padding:6px 4px;border-bottom:1px solid var(--line);text-align:start}
+th{color:var(--mute);font-weight:600}
+
+/* charts */
+.chart svg{width:100%;height:auto;display:block;touch-action:pan-y}
+.chart .grid{stroke:var(--line);stroke-width:1}
+.chart .ax{fill:var(--mute);font-size:11px}
+.readout{min-height:1.7em;font-size:.82rem;color:var(--mute)}
+.legend{display:flex;gap:14px;font-size:.78rem;color:var(--mute);margin:4px 0}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-inline-end:5px;vertical-align:middle}
+.ctrl{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-bottom:10px}
+.ctrl input[type=date]{border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:6px 8px}
+.pill{border:1px solid var(--line);background:var(--panel);border-radius:20px;padding:5px 12px;cursor:pointer}
+.pill:hover,.pill:focus-visible{border-color:var(--sea2)}
+.stats{display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin:12px 0}
+.stats div{border-inline-start:3px solid var(--sea2);padding:2px 10px;font-size:.85rem;color:var(--mute)}
+.stats b{display:block;color:var(--ink);font-size:1.05rem}
+.note{border-inline-start:3px solid var(--warm);padding:6px 12px;font-size:.84rem;color:var(--mute);margin:10px 0}
+
+/* chat */
+.chat{display:flex;flex-direction:column;gap:10px;min-height:200px}
+.msg{max-width:88%;padding:9px 13px;border-radius:14px;white-space:pre-wrap;font-size:.93rem}
+.msg.u{align-self:flex-start;background:var(--sea2);color:#fff;border-end-start-radius:4px}
+.msg.a{align-self:flex-end;background:var(--panel);border:1px solid var(--line);border-end-end-radius:4px}
+.msg small{display:block;color:var(--mute);margin-top:4px}
+.ask{display:flex;gap:8px;margin-top:12px}
+.ask input{flex:1;border:1px solid var(--line);background:var(--panel);border-radius:12px;padding:10px 12px;outline:none}
+.ask input:focus-visible{border-color:var(--sea2)}
+.ask button{border:0;border-radius:12px;background:var(--sea2);color:#fff;padding:0 18px;cursor:pointer;font-weight:700}
+.ask button:disabled{opacity:.5}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+
+.empty{padding:50px 10px;text-align:center}
+.empty p{margin:6px 0}
+.err{background:#fde8e8;color:#8a1c1c;border-radius:10px;padding:10px 14px;margin:12px 0}
+.spin{padding:40px;text-align:center;color:var(--mute)}
+@media (prefers-reduced-motion:no-preference){.spin::after{content:"";display:inline-block;width:14px;height:14px;border:2px solid var(--line);border-top-color:var(--sea2);border-radius:50%;margin-inline-start:10px;vertical-align:middle;animation:r .8s linear infinite}@keyframes r{to{transform:rotate(360deg)}}}
+</style>
+</head>
+<body>
+<div class="top"><div class="wrap">
+  <div class="search" role="search">
+    <input id="q" type="search" placeholder="نام هر شهر یا روستا در دنیا…" autocomplete="off" aria-label="جستجوی شهر">
+    <button class="iconbtn" id="geo" aria-label="موقعیت من" title="موقعیت من">⌖</button>
+    <div class="sugg" id="sugg" hidden></div>
+  </div>
+</div></div>
+
+<div id="app"></div>
+
+<script>
+'use strict';
+const $ = (s, r = document) => r.querySelector(s);
+const nf = (n, d = 0) => n == null || isNaN(n) ? '—' : Number(n).toLocaleString('fa-IR', { maximumFractionDigits: d, minimumFractionDigits: d });
+const dfmt = (s, o) => new Intl.DateTimeFormat('fa-IR-u-ca-persian', o).format(new Date(s.slice(0, 10) + 'T12:00:00'));
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const WMO = {0:['صاف','☀️'],1:['عمدتاً صاف','🌤️'],2:['نیمه‌ابری','⛅'],3:['ابری','☁️'],45:['مه','🌫️'],48:['مه یخ‌زده','🌫️'],51:['نم‌نم','🌦️'],53:['نم‌نم','🌦️'],55:['نم‌نم شدید','🌦️'],56:['نم‌نم یخ‌زده','🌧️'],57:['نم‌نم یخ‌زده','🌧️'],61:['باران خفیف','🌧️'],63:['باران','🌧️'],65:['باران شدید','🌧️'],66:['باران یخ‌زده','🌧️'],67:['باران یخ‌زده','🌧️'],71:['برف خفیف','🌨️'],73:['برف','🌨️'],75:['برف شدید','❄️'],77:['دانه‌برف','🌨️'],80:['رگبار خفیف','🌦️'],81:['رگبار','🌧️'],82:['رگبار شدید','⛈️'],85:['رگبار برف','🌨️'],86:['رگبار برف شدید','❄️'],95:['رعدوبرق','⛈️'],96:['تگرگ و رعد','⛈️'],99:['تگرگ شدید','⛈️']};
+const wx = c => WMO[c] || ['—', '·'];
+const compass = d => d == null ? '' : ['شمال','ش‌شرق','شرق','ج‌شرق','جنوب','ج‌غرب','غرب','ش‌غرب'][Math.round(d / 45) % 8];
+
+const S = { place: null, data: null, tab: 'today', chat: [] };
+const TABS = [['today', 'امروز'], ['days', '۱۶ روز آینده'], ['hist', 'آرشیو ۳ ماه'], ['long', '۳۰ روز آینده'], ['ai', 'دستیار هوشمند']];
+
+// ---------- charts (no external libs) ----------
+const niceStep = r => { const p = 10 ** Math.floor(Math.log10(r || 1)), m = (r || 1) / p; return (m < 1.5 ? 1 : m < 3.5 ? 2 : m < 7.5 ? 5 : 10) * p; };
+function lineChart(host, dates, series, unit = '°') {
+  const W = 720, H = 230, L = 34, R = 10, T = 12, B = 26;
+  const all = series.flatMap(s => [...s.vals, ...(s.lo || []), ...(s.hi || [])]).filter(v => v != null);
+  if (!all.length) { host.innerHTML = '<p class="muted">داده‌ای نیست</p>'; return; }
+  let lo = Math.min(...all), hi = Math.max(...all); const pad = (hi - lo || 1) * .1; lo -= pad; hi += pad;
+  const n = dates.length, x = i => L + (n < 2 ? 0 : i * (W - L - R) / (n - 1)), y = v => T + (hi - v) * (H - T - B) / (hi - lo);
+  let g = ''; const st = niceStep((hi - lo) / 4);
+  for (let v = Math.ceil(lo / st) * st; v <= hi; v += st) g += `<line class="grid" x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}"/><text class="ax" x="${L - 5}" y="${y(v) + 4}" text-anchor="end">${nf(v)}</text>`;
+  const tk = Math.min(5, n);
+  for (let k = 0; k < tk; k++) { const i = Math.round(k * (n - 1) / (tk - 1 || 1)); g += `<text class="ax" x="${x(i)}" y="${H - 8}" text-anchor="middle">${dfmt(dates[i], { month: 'short', day: 'numeric' })}</text>`; }
+  for (const s of series) {
+    if (s.lo && s.hi) {
+      const up = s.hi.map((v, i) => v == null ? null : `${x(i)},${y(v)}`).filter(Boolean), dn = s.lo.map((v, i) => v == null ? null : `${x(i)},${y(v)}`).filter(Boolean).reverse();
+      g += `<polygon points="${up.concat(dn).join(' ')}" fill="${s.color}" opacity=".16"/>`;
+    }
+    let d = '', pen = false;
+    s.vals.forEach((v, i) => { if (v == null) { pen = false; return; } d += `${pen ? 'L' : 'M'}${x(i).toFixed(1)},${y(v).toFixed(1)}`; pen = true; });
+    g += `<path d="${d}" fill="none" stroke="${s.color}" stroke-width="${s.dash ? 1.6 : 2.2}" ${s.dash ? 'stroke-dasharray="5 4"' : ''} stroke-linejoin="round"/>`;
+  }
+  host.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img">${g}<line id="cur" y1="${T}" y2="${H - B}" stroke="currentColor" opacity=".35" visibility="hidden"/><rect x="${L}" y="0" width="${W - L - R}" height="${H}" fill="transparent"/></svg><div class="readout"></div>`;
+  const svg = $('svg', host), ro = $('.readout', host), cur = $('#cur', host);
+  const move = e => {
+    const b = svg.getBoundingClientRect(), px = (e.clientX - b.left) / b.width * W;
+    const i = Math.max(0, Math.min(n - 1, Math.round((px - L) / (W - L - R) * (n - 1))));
+    cur.setAttribute('x1', x(i)); cur.setAttribute('x2', x(i)); cur.setAttribute('visibility', 'visible');
+    ro.textContent = dfmt(dates[i], { weekday: 'short', month: 'long', day: 'numeric' }) + ' — ' + series.map(s => `${s.name}: ${nf(s.vals[i], 1)}${unit}`).join(' | ');
+  };
+  svg.addEventListener('pointermove', move); svg.addEventListener('pointerdown', move);
+}
+function barChart(host, dates, vals, color, name) {
+  const W = 720, H = 130, L = 34, R = 10, T = 10, B = 22, n = dates.length, mx = Math.max(1, ...vals.map(v => v || 0));
+  const bw = (W - L - R) / n, h = v => (v || 0) / mx * (H - T - B);
+  let g = `<text class="ax" x="${L - 5}" y="${T + 8}" text-anchor="end">${nf(mx)}</text><line class="grid" x1="${L}" x2="${W - R}" y1="${H - B}" y2="${H - B}"/>`;
+  vals.forEach((v, i) => g += `<rect x="${L + i * bw + bw * .12}" width="${Math.max(1, bw * .76)}" y="${H - B - h(v)}" height="${h(v)}" fill="${color}" rx="1.5"/>`);
+  const tk = Math.min(5, n); for (let k = 0; k < tk; k++) { const i = Math.round(k * (n - 1) / (tk - 1 || 1)); g += `<text class="ax" x="${L + i * bw + bw / 2}" y="${H - 6}" text-anchor="middle">${dfmt(dates[i], { month: 'short', day: 'numeric' })}</text>`; }
+  host.innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img">${g}<rect x="${L}" y="0" width="${W - L - R}" height="${H}" fill="transparent"/></svg><div class="readout"></div>`;
+  const svg = $('svg', host), ro = $('.readout', host);
+  const move = e => { const b = svg.getBoundingClientRect(), px = (e.clientX - b.left) / b.width * W; const i = Math.max(0, Math.min(n - 1, Math.floor((px - L) / bw))); ro.textContent = `${dfmt(dates[i], { weekday: 'short', month: 'long', day: 'numeric' })} — ${name}: ${nf(vals[i], 1)} میلی‌متر`; };
+  svg.addEventListener('pointermove', move); svg.addEventListener('pointerdown', move);
+}
+
+// ---------- search ----------
+let timer;
+const q = $('#q'), sugg = $('#sugg');
+q.addEventListener('input', () => {
+  clearTimeout(timer);
+  const v = q.value.trim();
+  if (v.length < 2) { sugg.hidden = true; return; }
+  timer = setTimeout(async () => {
+    try {
+      const r = await (await fetch('/api/geo?q=' + encodeURIComponent(v))).json();
+      if (!Array.isArray(r) || !r.length) { sugg.innerHTML = '<button disabled>شهری پیدا نشد؛ املای دیگری را امتحان کن</button>'; sugg.hidden = false; return; }
+      sugg.innerHTML = r.map((p, i) => `<button data-i="${i}">${esc(p.name)} <small>${esc([p.admin1, p.country].filter(Boolean).join('، '))}</small></button>`).join('');
+      sugg._r = r; sugg.hidden = false;
+    } catch { sugg.hidden = true; }
+  }, 250);
+});
+sugg.addEventListener('click', e => { const b = e.target.closest('button[data-i]'); if (!b) return; choose(sugg._r[+b.dataset.i]); });
+document.addEventListener('click', e => { if (!e.target.closest('.search')) sugg.hidden = true; });
+$('#geo').onclick = () => navigator.geolocation?.getCurrentPosition(p => choose({ name: 'موقعیت من', lat: p.coords.latitude, lon: p.coords.longitude, cc: '', country: '' }), () => alert('اجازه‌ی موقعیت داده نشد'));
+function choose(p) { sugg.hidden = true; q.value = ''; S.place = p; S.chat = []; S.tab = 'today'; try { localStorage.setItem('wx.place', JSON.stringify(p)); } catch {} load(); }
+
+// ---------- load ----------
+async function load() {
+  $('#app').innerHTML = '<div class="spin">در حال دریافت داده‌ها</div>';
+  try {
+    const r = await fetch(`/api/weather?lat=${S.place.lat}&lon=${S.place.lon}&cc=${S.place.cc || ''}`);
+    const d = await r.json(); if (!r.ok) throw new Error(d.error || 'خطا');
+    S.data = d; render();
+  } catch (e) { $('#app').innerHTML = `<div class="wrap"><div class="err">${esc(e.message)}</div><button class="pill" onclick="load()">تلاش دوباره</button></div>`; }
+}
+
+function render() {
+  const { place: p, data: d } = S, c = d.current, [desc, em] = wx(c.weather_code), today = d.daily;
+  const nat = d.national;
+  $('#app').innerHTML = `
+  <div class="hero"><div class="wrap">
+    <h1>${esc(p.name)}</h1><div class="sub">${esc([p.admin1, p.country].filter(Boolean).join('، '))}${d.elevation != null ? ' · ارتفاع ' + nf(d.elevation) + ' متر' : ''}</div>
+    <div class="now"><span class="t">${nf(c.temperature_2m)}°</span><span class="c">${em}</span><div class="d">${desc}<br><span class="sub">احساس واقعی ${nf(c.apparent_temperature)}° · امروز ${nf(today.temperature_2m_min[0])}° تا ${nf(today.temperature_2m_max[0])}°</span></div></div>
+    <div class="metrics">
+      <div>رطوبت<b>${nf(c.relative_humidity_2m)}٪</b></div>
+      <div>باد<b>${nf(c.wind_speed_10m)} کم/س ${compass(c.wind_direction_10m)}</b></div>
+      <div>وزش تا<b>${nf(c.wind_gusts_10m)} کم/س</b></div>
+      <div>فشار<b>${nf(c.pressure_msl)} hPa</b></div>
+      <div>ابر<b>${nf(c.cloud_cover)}٪</b></div>
+      <div>UV امروز<b>${nf(today.uv_index_max[0])}</b></div>
+    </div>
+    <div class="src">منبع: ترکیب مدل‌های جهانی ${nat ? '· مدل رسمی کشور: ' + esc(nat.name) : ''} · به‌روز: ${esc(c.time.replace('T', ' '))}</div>
+  </div></div>
+  <div class="wrap">
+    <div class="tabs" role="tablist">${TABS.map(([k, t]) => `<button role="tab" data-t="${k}" aria-selected="${S.tab === k}">${t}</button>`).join('')}</div>
+    <section class="pane" id="pane"></section>
+  </div>`;
+  $('.tabs').onclick = e => { const b = e.target.closest('button'); if (!b) return; S.tab = b.dataset.t; document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', x === b)); pane(); };
+  pane();
+}
+const pane = () => ({ today: tToday, days: tDays, hist: tHist, long: tLong, ai: tAI }[S.tab])($('#pane'));
+
+function tToday(h) {
+  const d = S.data, hr = d.hourly, now = d.current.time.slice(0, 13);
+  let s = Math.max(0, hr.time.findIndex(t => t.slice(0, 13) >= now)); const idx = [...Array(Math.min(48, hr.time.length - s)).keys()].map(i => i + s);
+  const dd = d.daily;
+  h.innerHTML = `<h2>۴۸ ساعت آینده</h2><div class="hours">${idx.map(i => `<div><div class="muted">${nf(+hr.time[i].slice(11, 13))}:۰۰</div><div class="e">${wx(hr.weather_code[i])[1]}</div><b>${nf(hr.temperature_2m[i])}°</b><div class="p">${hr.precipitation_probability[i] ? nf(hr.precipitation_probability[i]) + '٪' : ''}</div></div>`).join('')}</div>
+  <div class="stats"><div>طلوع خورشید<b>${nf(+dd.sunrise[0].slice(11, 13))}:${dd.sunrise[0].slice(14, 16).replace(/\d/g, x => '۰۱۲۳۴۵۶۷۸۹'[x])}</b></div><div>غروب خورشید<b>${nf(+dd.sunset[0].slice(11, 13))}:${dd.sunset[0].slice(14, 16).replace(/\d/g, x => '۰۱۲۳۴۵۶۷۸۹'[x])}</b></div>
+  <div>احتمال بارش امروز<b>${nf(dd.precipitation_probability_max[0])}٪</b></div><div>مجموع بارش امروز<b>${nf(dd.precipitation_sum[0], 1)} میلی‌متر</b></div></div>`;
+}
+
+function tDays(h) {
+  const d = S.data.daily, g0 = Math.min(...d.temperature_2m_min), g1 = Math.max(...d.temperature_2m_max), sp = g1 - g0 || 1;
+  let out = `<div class="note">دقت: ۱ تا ۳ روز بسیار بالا، ۴ تا ۷ روز خوب، ۸ تا ۱۶ روز تقریبی است.</div>`;
+  d.time.forEach((t, i) => {
+    const a = (d.temperature_2m_min[i] - g0) / sp * 100, w = Math.max(3, (d.temperature_2m_max[i] - d.temperature_2m_min[i]) / sp * 100);
+    out += `<div class="day"><div class="n">${i === 0 ? 'امروز' : dfmt(t, { weekday: 'long' })}<small>${dfmt(t, { month: 'short', day: 'numeric' })}</small></div><span title="${wx(d.weather_code[i])[0]}">${wx(d.weather_code[i])[1]}</span><span class="lo">${nf(d.temperature_2m_min[i])}°</span><div class="rib"><i style="left:${a}%;width:${w}%"></i></div><b>${nf(d.temperature_2m_max[i])}°</b><span class="r">${d.precipitation_sum[i] >= .1 ? nf(d.precipitation_sum[i], 1) + ' mm' : ''}</span></div>`;
+  });
+  const n = S.data.national;
+  if (n?.daily) {
+    out += `<h2 style="margin-top:20px">مقایسه با مدل رسمی: ${esc(n.name)}</h2><table><tr><th>روز</th><th>حداکثر (اصلی)</th><th>حداکثر (${esc(n.name.split(' ')[0])})</th><th>بارش اصلی</th><th>بارش رسمی</th></tr>` +
+      n.daily.time.map((t, i) => `<tr><td>${dfmt(t, { weekday: 'short' })}</td><td>${nf(d.temperature_2m_max[i])}°</td><td>${nf(n.daily.temperature_2m_max[i])}°</td><td>${nf(d.precipitation_sum[i], 1)}</td><td>${nf(n.daily.precipitation_sum[i], 1)}</td></tr>`).join('') + '</table>';
+  }
+  h.innerHTML = out;
+}
+
+function tHist(h) {
+  const H = S.data.history; if (!H) { h.innerHTML = '<div class="err">آرشیو برای این نقطه در دسترس نیست.</div>'; return; }
+  const last = H.time[H.time.length - 1], first = H.time[0];
+  const shift = (days) => { const x = new Date(last + 'T12:00:00'); x.setDate(x.getDate() - days); const s = x.toISOString().slice(0, 10); return s < first ? first : s; };
+  h.innerHTML = `<div class="ctrl"><label>از <input type="date" id="hs" min="${first}" max="${last}" value="${shift(29)}"></label><label>تا <input type="date" id="he" min="${first}" max="${last}" value="${last}"></label>
+    <button class="pill" data-d="6">۷ روز</button><button class="pill" data-d="29">۳۰ روز</button><button class="pill" data-d="59">۶۰ روز</button><button class="pill" data-d="91">۹۲ روز</button></div><div id="hout"></div>`;
+  const run = () => histRender($('#hs').value, $('#he').value);
+  h.onchange = run; h.onclick = e => { const b = e.target.closest('[data-d]'); if (b) { $('#hs').value = shift(+b.dataset.d); $('#he').value = last; run(); } };
+  run();
+}
+function histRender(a, b) {
+  const H = S.data.history, ix = H.time.map((t, i) => i).filter(i => H.time[i] >= a && H.time[i] <= b), o = $('#hout');
+  if (!ix.length) { o.innerHTML = '<p class="muted">بازه‌ی نامعتبر</p>'; return; }
+  const g = k => ix.map(i => H[k][i]), dates = g('time'), tx = g('temperature_2m_max'), tn = g('temperature_2m_min'), pr = g('precipitation_sum');
+  const mean = g('temperature_2m_mean').filter(v => v != null), avg = mean.reduce((x, y) => x + y, 0) / (mean.length || 1);
+  const iMax = tx.indexOf(Math.max(...tx)), iMin = tn.indexOf(Math.min(...tn));
+  o.innerHTML = `<div class="legend"><span><i style="background:var(--warm)"></i>حداکثر</span><span><i style="background:var(--cool)"></i>حداقل</span></div><div class="chart" id="c1"></div>
+  <div class="legend"><span><i style="background:var(--rain)"></i>بارش روزانه (میلی‌متر)</span></div><div class="chart" id="c2"></div>
+  <div class="stats"><div>میانگین دما<b>${nf(avg, 1)}°</b></div><div>مجموع بارش<b>${nf(pr.reduce((x, y) => x + (y || 0), 0), 1)} میلی‌متر</b></div>
+  <div>گرم‌ترین روز<b>${nf(tx[iMax], 1)}° · ${dfmt(dates[iMax], { month: 'short', day: 'numeric' })}</b></div><div>سردترین شب<b>${nf(tn[iMin], 1)}° · ${dfmt(dates[iMin], { month: 'short', day: 'numeric' })}</b></div>
+  <div>روزهای بارانی (≥۱ mm)<b>${nf(pr.filter(v => v >= 1).length)} روز</b></div><div>بیشینه‌ی وزش باد<b>${nf(Math.max(...g('wind_gusts_10m_max').filter(v => v != null)))} کم/س</b></div></div>
+  <details><summary class="pill" style="display:inline-block">جدول روزانه</summary><table><tr><th>تاریخ</th><th>حداقل</th><th>حداکثر</th><th>بارش</th><th></th></tr>${[...ix].reverse().map(i => `<tr><td>${dfmt(H.time[i], { month: 'short', day: 'numeric' })}</td><td>${nf(H.temperature_2m_min[i], 1)}°</td><td>${nf(H.temperature_2m_max[i], 1)}°</td><td>${nf(H.precipitation_sum[i], 1)}</td><td>${wx(H.weather_code[i])[1]}</td></tr>`).join('')}</table></details>
+  <p class="muted" style="margin-top:8px">داده‌ی آرشیو بر پایه‌ی آنالیز مدل‌های جوی است (نه ایستگاه زمینی) و برای همین نقطه‌ی جغرافیایی محاسبه می‌شود.</p>`;
+  lineChart($('#c1'), dates, [{ name: 'حداکثر', vals: tx, color: 'var(--warm)' }, { name: 'حداقل', vals: tn, color: 'var(--cool)' }]);
+  barChart($('#c2'), dates, pr, 'var(--rain)', 'بارش');
+}
+
+function tLong(h) {
+  const L = S.data.longRange; if (!L?.rows?.length) { h.innerHTML = '<div class="err">پیش‌بینی بلندمدت برای این نقطه در دسترس نیست.</div>'; return; }
+  const r = L.rows, dates = r.map(x => x.date);
+  const sd = r.map(x => x.sd);
+  const series = [];
+  if (!L.climatologyOnly) {
+    series.push({ name: 'حداکثر (پیش‌بینی)', vals: r.map(x => x.tmax), color: 'var(--warm)', lo: r.map(x => x.tmax == null ? null : x.tmax - 1.5 * (x.sd || 0)), hi: r.map(x => x.tmax == null ? null : x.tmax + 1.5 * (x.sd || 0)) });
+    series.push({ name: 'حداقل (پیش‌بینی)', vals: r.map(x => x.tmin), color: 'var(--cool)' });
+  }
+  series.push({ name: 'حداکثر نرمال', vals: r.map(x => x.nTmax), color: 'var(--warm)', dash: 1 }, { name: 'حداقل نرمال', vals: r.map(x => x.nTmin), color: 'var(--cool)', dash: 1 });
+  // weekly summary
+  const weeks = []; for (let i = 0; i < r.length; i += 7) weeks.push(r.slice(i, i + 7));
+  const avg = (a, k) => { const v = a.map(x => x[k]).filter(x => x != null); return v.length ? v.reduce((p, q) => p + q, 0) / v.length : null; };
+  const sum = (a, k) => { const v = a.map(x => x[k]).filter(x => x != null); return v.length ? v.reduce((p, q) => p + q, 0) : null; };
+  h.innerHTML = `<div class="note">${L.climatologyOnly ? 'پیش‌بینی فصلی در دسترس نبود؛ فقط میانگین اقلیمی نمایش داده شده.' : 'بعد از حدود ۱۰ تا ۱۶ روز، پیش‌بینی «روزانه‌ی دقیق» وجود ندارد. این نمودار میانگین ۵۱ سناریوی ECMWF است و تفاوت با حالت «نرمال» را نشان می‌دهد. محدوده‌ی روشن یعنی عدم‌قطعیت.'}</div>
+  <div class="legend"><span><i style="background:var(--warm)"></i>حداکثر پیش‌بینی</span><span><i style="background:var(--cool)"></i>حداقل پیش‌بینی</span><span>خط‌چین: نرمال اقلیمی (۶ سال اخیر)</span></div><div class="chart" id="c1"></div>
+  <h2 style="margin-top:16px">خلاصه‌ی هفتگی</h2><table><tr><th>هفته</th><th>میانگین حداکثر</th><th>اختلاف با نرمال</th><th>بارش</th><th>بارش نرمال</th></tr>${weeks.map(w => {
+    const a = avg(w, 'tmax'), n = avg(w, 'nTmax'), df = a != null && n != null ? a - n : null;
+    return `<tr><td>${dfmt(w[0].date, { month: 'short', day: 'numeric' })} تا ${dfmt(w[w.length - 1].date, { month: 'short', day: 'numeric' })}</td><td>${nf(a ?? n, 1)}°</td><td>${df == null ? '—' : (df > 0 ? '+' : '') + nf(df, 1) + '°'}</td><td>${nf(sum(w, 'precip'), 0)}</td><td>${nf(sum(w, 'nPrecip'), 0)}</td></tr>`;
+  }).join('')}</table>`;
+  lineChart($('#c1'), dates, series);
+}
+
+function md(t) { return esc(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>'); }
+function tAI(h) {
+  const name = S.place.name;
+  h.innerHTML = `<div class="chips">${[`برای ${name} این هفته چی بپوشم؟`, `ماه آینده ${name} نسبت به همین موقع سال چطوره؟`, `بارش ماه گذشته ${name} رو با نرمال مقایسه کن`, `بهترین روز این هفته برای سفر یک‌روزه؟`].map(s => `<button class="pill" data-s="${esc(s)}">${esc(s)}</button>`).join('')}</div>
+  <div class="chat" id="chat">${S.chat.length ? S.chat.map(bub).join('') : '<p class="muted">هر سؤالی درباره‌ی هوای این شهر یا هر شهر دیگری بپرس؛ دستیار خودش داده‌ها را می‌گیرد و تحلیل می‌کند.</p>'}</div>
+  <form class="ask" id="f"><input id="m" placeholder="سؤالت را بنویس…" aria-label="پیام" autocomplete="off"><button>ارسال</button></form>`;
+  h.onclick = e => { const b = e.target.closest('[data-s]'); if (b) send(b.dataset.s); };
+  $('#f').onsubmit = e => { e.preventDefault(); const v = $('#m').value.trim(); if (v) send(v); };
+}
+const bub = m => `<div class="msg ${m.role === 'user' ? 'u' : 'a'}">${md(m.content)}${m.tools?.length ? `<small>ابزارها: ${[...new Set(m.tools)].map(t => ({ search_city: 'جستجوی شهر', get_forecast: 'پیش‌بینی', get_history: 'آرشیو', get_long_range: 'بلندمدت' }[t] || t)).join('، ')}</small>` : ''}</div>`;
+async function send(text) {
+  S.chat.push({ role: 'user', content: text }); tAI($('#pane'));
+  const chat = $('#chat'); chat.insertAdjacentHTML('beforeend', '<div class="msg a" id="wait">در حال بررسی و دریافت داده…</div>'); $('#m').disabled = true;
+  try {
+    const r = await fetch('/api/agent', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ place: S.place, messages: S.chat.map(({ role, content }) => ({ role, content })) }) });
+    const d = await r.json(); if (!r.ok) throw new Error(d.error || 'خطا');
+    S.chat.push({ role: 'assistant', content: d.reply, tools: d.tools });
+  } catch (e) { S.chat.push({ role: 'assistant', content: 'خطا: ' + e.message }); }
+  if (S.tab === 'ai') tAI($('#pane'));
+}
+
+// ---------- boot ----------
+(function boot() {
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('/sw.js').catch(() => {});
+  let saved = null; try { saved = JSON.parse(localStorage.getItem('wx.place')); } catch {}
+  if (saved) { S.place = saved; load(); return; }
+  $('#app').innerHTML = `<div class="wrap empty"><h2>هواشناسی هوشمند</h2><p class="muted">نام هر شهر یا روستای دنیا را بالا جستجو کن.</p><div class="chips" style="justify-content:center">${[['تهران', 35.69, 51.42, 'IR', 'ایران'], ['مشهد', 36.3, 59.6, 'IR', 'ایران'], ['برلین', 52.52, 13.41, 'DE', 'آلمان'], ['استانبول', 41.01, 28.95, 'TR', 'ترکیه']].map(c => `<button class="pill" data-c='${JSON.stringify({ name: c[0], lat: c[1], lon: c[2], cc: c[3], country: c[4] })}'>${c[0]}</button>`).join('')}</div></div>`;
+  $('#app').onclick = e => { const b = e.target.closest('[data-c]'); if (b) choose(JSON.parse(b.dataset.c)); };
+})();
+</script>
+</body>
+</html>
