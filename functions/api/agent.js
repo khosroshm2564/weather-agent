@@ -18,14 +18,14 @@ export async function onRequestPost({ request, env }) {
 5. فارسی، خودمانی و کوتاه جواب بده؛ توصیه عملی بده (لباس، چتر، سفر). برای پرسش‌های مقایسه‌ای چند ابزار را با هم صدا بزن.`;
 
   const msgs = [{ role: 'system', content: system },
-    ...(body.messages || []).filter((m) => ['user', 'assistant'].includes(m.role) && typeof m.content === 'string').slice(-12)];
+    ...(body.messages || []).filter((m) => ['user', 'assistant'].includes(m.role) && typeof m.content === 'string').slice(-4)];
   const used = [];
 
-  for (let step = 0; step < 6; step++) {
+  for (let step = 0; step < 3; step++) {
     const r = await fetch(base + '/chat/completions', {
       method: 'POST',
       headers: { 'content-type': 'application/json', authorization: 'Bearer ' + env.AI_API_KEY },
-      body: JSON.stringify({ model, messages: msgs, tools: TOOLS, tool_choice: 'auto', temperature: 0.2, max_tokens: 900 }),
+      body: JSON.stringify({ model, messages: msgs, tools: TOOLS, tool_choice: 'auto', temperature: 0.2, max_tokens: 500 }),
     });
     if (!r.ok) return json({ error: `AI ${r.status}: ${(await r.text()).slice(0, 300)}` }, 502);
     const msg = (await r.json()).choices?.[0]?.message;
